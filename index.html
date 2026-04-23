@@ -10,20 +10,20 @@
   body {
     min-height: 100vh;
     background: #111;
-    font-family: 'Courier New', monospace;
+    font-family: 'Meiryo UI', 'メイリオ', sans-serif;
     color: #ccc;
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 36px 20px;
+    padding: 20px 12px;
   }
 
-  .header { width: 100%; max-width: 760px; margin-bottom: 24px; }
+  .header { width: 100%; max-width: 1600px; margin-bottom: 24px; }
   .header-label { font-size: 10px; letter-spacing: 5px; color: #555; text-transform: uppercase; margin-bottom: 6px; }
   .header-line { height: 1px; background: linear-gradient(90deg, #e8c27a44, transparent); }
 
   .toolbar {
-    width: 100%; max-width: 760px;
+    width: 100%; max-width: 1600px;
     display: flex; gap: 8px; margin-bottom: 12px;
     flex-wrap: wrap; align-items: center;
   }
@@ -33,54 +33,91 @@
     background: #1c1c1c;
     border: 1px solid #2a2a2a;
     color: #bbb;
-    font-family: 'Courier New', monospace;
+    font-family: 'Meiryo UI', 'メイリオ', sans-serif;
     font-size: 13px;
     padding: 6px 16px;
     border-radius: 4px;
     cursor: pointer;
-    transition: border-color 0.15s;
+    transition: border-color 0.15s, opacity 0.15s;
   }
-  button:hover { border-color: #e8c27a; }
+  button:hover:not(:disabled) { border-color: #e8c27a; }
+  button:disabled { opacity: 0.3; cursor: default; }
 
   #btn-underline { text-decoration: underline; }
   #btn-bold { font-weight: bold; }
   #btn-gray { color: #666; }
-  #btn-question { color: #c0a8e8; letter-spacing: 1px; }
-  #btn-question:hover { border-color: #c0a8e8; }
+  #btn-question { color: #c0a8e8; }
+  #btn-question:hover:not(:disabled) { border-color: #c0a8e8; }
+  #btn-speaker-a { color: #c0392b; }
+  #btn-speaker-b { color: #a8c8e8; }
 
-  .legend {
-    margin-left: auto;
-    display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+  .divider { width: 1px; height: 24px; background: #2a2a2a; margin: 0 4px; }
+  .btn-wrap { display: flex; flex-direction: column; align-items: center; }
+  .shortcut-hint { font-size: 9px; color: #444; display: block; text-align: center; margin-top: 2px; }
+  .legend { margin-left: auto; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+
+  /* Panes */
+  .panes-wrapper {
+    width: 100%; max-width: 1600px;
+    display: flex;
+    gap: 0;
+    height: 560px;
+    min-height: 120px;
+    align-items: flex-start;
   }
-  .legend span { font-size: 10px; color: #555; }
-  .legend .q { color: #7a6aaa; }
 
-  .panes {
-    width: 100%; max-width: 760px;
-    display: flex; gap: 12px;
+  .pane { display: flex; flex-direction: column; min-width: 80px; flex: 1; height: 100%; }
+  .pane-label {
+    font-size: 9px; letter-spacing: 3px; text-transform: uppercase;
+    margin-bottom: 6px; flex-shrink: 0;
+    padding: 3px 10px; border-radius: 3px;
+    display: inline-block; align-self: flex-start;
   }
-  .pane { flex: 1; }
-  .pane-label { font-size: 9px; letter-spacing: 3px; color: #444; text-transform: uppercase; margin-bottom: 6px; }
+  #paneLeft .pane-label { color: #888; background: #88888818; border: 1px solid #88888833; }
+  #paneRight .pane-label { color: #888; background: #88888818; border: 1px solid #88888833; }
 
-  textarea {
-    width: 100%; height: 380px;
+  #editor {
+    flex: 1;
+    width: 100%;
     background: #151515;
-    border: 1px solid #222;
+    border: 1px solid #e8c27a33;
     border-radius: 6px;
     color: #ccc;
-    font-family: 'Courier New', monospace;
+    font-family: 'Meiryo UI', 'メイリオ', sans-serif;
     font-size: 13px;
     line-height: 1.8;
     padding: 14px;
-    resize: none;
     outline: none;
+    resize: none;
   }
-  textarea:focus { border-color: #e8c27a55; }
+  #editor:focus { border-color: #e8c27a88; }
+
+  /* Horizontal splitter */
+  .splitter {
+    width: 10px;
+    cursor: col-resize;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    align-self: center;
+    user-select: none;
+  }
+  .splitter::after {
+    content: '';
+    display: block;
+    width: 2px;
+    height: 48px;
+    background: #2a2a2a;
+    border-radius: 2px;
+    transition: background 0.15s;
+  }
+  .splitter:hover::after, .splitter.dragging::after { background: #e8c27a; }
 
   #preview {
-    height: 380px;
-    background: #151515;
-    border: 1px solid #222;
+    flex: 1;
+    background: #fdf5e0;
+    border: 1px solid #a8c8e855;
     border-radius: 6px;
     padding: 14px;
     overflow-y: auto;
@@ -88,75 +125,227 @@
     font-size: 13px;
   }
 
-  .preview-line { display: flex; gap: 8px; margin-bottom: 2px; }
-  .speaker { color: #e8c27a; font-weight: bold; min-width: 28px; flex-shrink: 0; }
-  .speaker.question { color: #c0a8e8; }
-  .plain-line { color: #888; min-height: 22px; }
-
-  .actions {
-    width: 100%; max-width: 760px;
-    margin-top: 12px; display: flex; justify-content: flex-end;
+  /* Vertical resize handle */
+  .resize-handle {
+    width: 100%; max-width: 1600px;
+    height: 12px;
+    cursor: ns-resize;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 2px;
+    user-select: none;
   }
-  #btn-copy { font-size: 11px; letter-spacing: 2px; padding: 8px 20px; color: #888; }
+  .resize-handle::after {
+    content: '';
+    display: block;
+    width: 48px; height: 3px;
+    background: #2a2a2a;
+    border-radius: 2px;
+    transition: background 0.15s;
+  }
+  .resize-handle:hover::after, .resize-handle.dragging::after { background: #e8c27a; }
+
+  .preview-line { display: flex; gap: 8px; margin-bottom: 2px; }
+  .speaker { font-weight: bold; min-width: 28px; flex-shrink: 0; }
+  .speaker.speaker-a { color: #c0392b; }
+  .speaker.speaker-b { color: #2878b8; }
+  .speaker.question { color: #7060b0; }
+  .plain-line { color: #999; min-height: 22px; }
+
   #btn-copy.copied { border-color: #a8d8a8; color: #a8d8a8; }
 </style>
 </head>
 <body>
 
-<div class="header">
-  <div class="header-label">Anki / Manual Formatter</div>
-  <div class="header-line"></div>
-</div>
-
 <div class="toolbar">
-  <span class="toolbar-label">SELECT → APPLY:</span>
-  <button id="btn-underline" onclick="applyFormat('_','_')" title="アンダーライン _text_">U</button>
-  <button id="btn-bold" onclick="applyFormat('(',')')" title="太字 (text)">B</button>
-  <button id="btn-gray" onclick="applyFormat('++','++')" title="グレーアウト ++text++">G</button>
-  <button id="btn-question" onclick="toggleQuestion()" title="問題形式トグル A?:">A?</button>
-  <div class="legend">
-    <span>_underline_</span>
-    <span style="font-weight:bold">(bold)</span>
-    <span style="color:#444">++gray++</span>
-    <span class="q">A?:</span>
+  <div class="btn-wrap">
+    <button id="btn-underline" onclick="applyFormat('_','_')">U</button>
+    <span class="shortcut-hint">Ctrl+U</span>
   </div>
+  <div class="btn-wrap">
+    <button id="btn-bold" onclick="applyFormat('(',')')">B</button>
+    <span class="shortcut-hint">Ctrl+B</span>
+  </div>
+  <div class="btn-wrap">
+    <button id="btn-gray" onclick="applyFormat('++','++')">G</button>
+    <span class="shortcut-hint">Ctrl+G</span>
+  </div>
+  <div class="btn-wrap">
+    <button id="btn-question" onclick="toggleQuestion()">A?</button>
+    <span class="shortcut-hint">Ctrl+Q</span>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="btn-wrap">
+    <button id="btn-speaker-a" onclick="addSpeaker('A')">A:</button>
+    <span class="shortcut-hint">Ctrl+1</span>
+  </div>
+  <div class="btn-wrap">
+    <button id="btn-speaker-b" onclick="addSpeaker('B')">B:</button>
+    <span class="shortcut-hint">Ctrl+2</span>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="btn-wrap">
+    <button id="btn-undo" onclick="undo()" disabled>↩</button>
+    <span class="shortcut-hint">Ctrl+Z</span>
+  </div>
+  <div class="btn-wrap">
+    <button id="btn-redo" onclick="redo()" disabled>↪</button>
+    <span class="shortcut-hint">Ctrl+Y</span>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="btn-wrap">
+    <button id="btn-copy" onclick="copyOutput()">Copy</button>
+    <span class="shortcut-hint">&nbsp;</span>
+  </div>
+
 </div>
 
-<div class="panes">
-  <div class="pane">
+<div class="panes-wrapper" id="panesWrapper">
+  <div class="pane" id="paneLeft">
     <div class="pane-label">Edit</div>
-    <textarea id="editor" oninput="updatePreview()">A: I'm still on the fence about taking the job.
-B: Yeah, I get it. It's a big decision.
-B: What's the main thing holding you back?
-A: The pay's great, but the commute's gonna be really long.
-B: How long are we talking?
-A: Probably like an hour and a half each way.
-B: Yeah, that's rough. That'll wear you out.</textarea>
+    <textarea id="editor" oninput="onInput()"></textarea>
   </div>
-  <div class="pane">
+  <div class="splitter" id="splitter"></div>
+  <div class="pane" id="paneRight">
     <div class="pane-label">Preview</div>
     <div id="preview"></div>
   </div>
 </div>
+<div class="resize-handle" id="resizeHandle"></div>
 
-<div class="actions">
-  <button id="btn-copy" onclick="copyOutput()">Copy output</button>
-</div>
+
 
 <script>
 const editor = document.getElementById('editor');
 const preview = document.getElementById('preview');
+const btnUndo = document.getElementById('btn-undo');
+const btnRedo = document.getElementById('btn-redo');
+const wrapper = document.getElementById('panesWrapper');
+const paneLeft = document.getElementById('paneLeft');
+const paneRight = document.getElementById('paneRight');
+const splitter = document.getElementById('splitter');
+const resizeHandle = document.getElementById('resizeHandle');
 
+// ── Vertical resize ────────────────────────────────────────────
+let vDragging = false, vStartY, vStartH;
+resizeHandle.addEventListener('mousedown', e => {
+  vDragging = true;
+  vStartY = e.clientY;
+  vStartH = wrapper.offsetHeight;
+  resizeHandle.classList.add('dragging');
+  e.preventDefault();
+});
+document.addEventListener('mousemove', e => {
+  if (!vDragging) return;
+  const h = Math.max(120, vStartH + (e.clientY - vStartY));
+  wrapper.style.height = h + 'px';
+});
+document.addEventListener('mouseup', () => {
+  vDragging = false;
+  resizeHandle.classList.remove('dragging');
+});
+
+// ── Horizontal resize (splitter) ──────────────────────────────
+// Initialize 50/50 split
+paneLeft.style.flex = 'none';
+paneRight.style.flex = 'none';
+function initSplit() {
+  const total = wrapper.offsetWidth - splitter.offsetWidth;
+  paneLeft.style.width = (total / 2) + 'px';
+  paneRight.style.width = (total / 2) + 'px';
+}
+initSplit();
+
+let hDragging = false, hStartX, hLeftW;
+splitter.addEventListener('mousedown', e => {
+  hDragging = true;
+  hStartX = e.clientX;
+  hLeftW = paneLeft.offsetWidth;
+  splitter.classList.add('dragging');
+  e.preventDefault();
+});
+document.addEventListener('mousemove', e => {
+  if (!hDragging) return;
+  const total = wrapper.offsetWidth - splitter.offsetWidth;
+  const newW = Math.max(80, Math.min(total - 80, hLeftW + (e.clientX - hStartX)));
+  paneLeft.style.width = newW + 'px';
+  paneRight.style.width = (total - newW) + 'px';
+});
+document.addEventListener('mouseup', () => {
+  hDragging = false;
+  splitter.classList.remove('dragging');
+});
+
+// ── Undo/Redo ─────────────────────────────────────────────────
+let history = [{ value: '', selStart: 0, selEnd: 0 }];
+let histIndex = 0;
+let isUndoRedo = false;
+
+function saveHistory() {
+  history = history.slice(0, histIndex + 1);
+  history.push({ value: editor.value, selStart: editor.selectionStart, selEnd: editor.selectionEnd });
+  if (history.length > 200) history.shift();
+  histIndex = history.length - 1;
+  updateUndoRedoBtns();
+}
+
+function undo() {
+  if (histIndex <= 0) return;
+  histIndex--;
+  isUndoRedo = true;
+  const s = history[histIndex];
+  editor.value = s.value;
+  editor.setSelectionRange(s.selStart, s.selEnd);
+  editor.focus();
+  isUndoRedo = false;
+  updatePreview();
+  updateUndoRedoBtns();
+}
+
+function redo() {
+  if (histIndex >= history.length - 1) return;
+  histIndex++;
+  isUndoRedo = true;
+  const s = history[histIndex];
+  editor.value = s.value;
+  editor.setSelectionRange(s.selStart, s.selEnd);
+  editor.focus();
+  isUndoRedo = false;
+  updatePreview();
+  updateUndoRedoBtns();
+}
+
+function updateUndoRedoBtns() {
+  btnUndo.disabled = histIndex <= 0;
+  btnRedo.disabled = histIndex >= history.length - 1;
+}
+
+let inputTimer = null;
+function onInput() {
+  updatePreview();
+  if (isUndoRedo) return;
+  clearTimeout(inputTimer);
+  inputTimer = setTimeout(saveHistory, 600);
+}
+
+// ── Format helpers ─────────────────────────────────────────────
 function applyFormat(open, close) {
   const start = editor.selectionStart;
   const end = editor.selectionEnd;
   if (start === end) return;
   const val = editor.value;
-  const selected = val.slice(start, end);
-  editor.value = val.slice(0, start) + open + selected + close + val.slice(end);
+  editor.value = val.slice(0, start) + open + val.slice(start, end) + close + val.slice(end);
   const newPos = end + open.length + close.length;
   editor.focus();
   editor.setSelectionRange(newPos, newPos);
+  saveHistory();
   updatePreview();
 }
 
@@ -169,19 +358,50 @@ function toggleQuestion() {
   const line = val.slice(lineStart, lineEnd);
   const match = line.match(/^([A-Z])(\?)?:/);
   if (!match) return;
-  let newLine;
-  if (match[2]) {
-    newLine = line[0] + ':' + line.slice(3);
-  } else {
-    newLine = line[0] + '?:' + line.slice(2);
-  }
+  const newLine = match[2]
+    ? line[0] + ':' + line.slice(3)
+    : line[0] + '?:' + line.slice(2);
   editor.value = val.slice(0, lineStart) + newLine + val.slice(lineEnd);
   const offset = match[2] ? -1 : 1;
   editor.focus();
   editor.setSelectionRange(pos + offset, pos + offset);
+  saveHistory();
   updatePreview();
 }
 
+function addSpeaker(label) {
+  const pos = editor.selectionStart;
+  const val = editor.value;
+  const lineStart = val.lastIndexOf('\n', pos - 1) + 1;
+  const lineEndRaw = val.indexOf('\n', pos);
+  const lineEnd = lineEndRaw === -1 ? val.length : lineEndRaw;
+  const line = val.slice(lineStart, lineEnd);
+  const newLine = line.match(/^[A-Z]\??:/)
+    ? label + ':' + line.slice(line.indexOf(':') + 1)
+    : label + ': ' + line;
+  editor.value = val.slice(0, lineStart) + newLine + val.slice(lineEnd);
+  editor.focus();
+  editor.setSelectionRange(lineStart + newLine.length, lineStart + newLine.length);
+  saveHistory();
+  updatePreview();
+}
+
+// ── Keyboard shortcuts ─────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (!e.ctrlKey && !e.metaKey) return;
+  const key = e.key.toLowerCase();
+  if (key === 'z') { e.preventDefault(); undo(); return; }
+  if (key === 'y') { e.preventDefault(); redo(); return; }
+  if (document.activeElement !== editor) return;
+  if (key === 'u') { e.preventDefault(); applyFormat('_', '_'); }
+  if (key === 'b') { e.preventDefault(); applyFormat('(', ')'); }
+  if (key === 'g') { e.preventDefault(); applyFormat('++', '++'); }
+  if (key === 'q') { e.preventDefault(); toggleQuestion(); }
+  if (key === '1') { e.preventDefault(); addSpeaker('A'); }
+  if (key === '2') { e.preventDefault(); addSpeaker('B'); }
+});
+
+// ── Preview renderer ───────────────────────────────────────────
 function parseTokens(text) {
   const tokens = [];
   let i = 0;
@@ -208,41 +428,122 @@ function parseTokens(text) {
   return tokens;
 }
 
+function makeSpan(text, styles) {
+  const esc = text.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  let style = '';
+  if (styles.gray) {
+    style = 'color:#bbb;font-style:italic;';
+  } else {
+    style = styles.underline
+      ? 'text-decoration:underline;text-underline-offset:3px;text-decoration-color:#000;color:#111;'
+      : 'color:#222;';
+  }
+  if (styles.bold) style += 'font-weight:bold;font-size:1.1em;';
+  return `<span style="${style}">${esc}</span>`;
+}
+
+function renderSegment(text, styles) {
+  const html = [];
+  let i = 0, last = 0;
+  while (i < text.length) {
+    if (!styles.bold && text[i] === '(') {
+      const end = text.indexOf(')', i + 1);
+      if (end !== -1) {
+        if (i > last) html.push(makeSpan(text.slice(last, i), styles));
+        html.push(makeSpan(text.slice(i + 1, end), { ...styles, bold: true }));
+        last = end + 1; i = end + 1; continue;
+      }
+    }
+    if (!styles.underline && text[i] === '_') {
+      const end = text.indexOf('_', i + 1);
+      if (end !== -1) {
+        if (i > last) html.push(makeSpan(text.slice(last, i), styles));
+        html.push(makeSpan(text.slice(i + 1, end), { ...styles, underline: true }));
+        last = end + 1; i = end + 1; continue;
+      }
+    }
+    i++;
+  }
+  if (last < text.length) html.push(makeSpan(text.slice(last), styles));
+  return html.join('');
+}
+
+function styledSpan(text, underline, bold, gray) {
+  return makeSpan(text, { underline, bold, gray });
+}
+
 function renderTokens(tokens) {
   return tokens.map(t => {
-    const esc = t.text.replace(/&/g,'&amp;').replace(/</g,'&lt;');
-    if (t.type === 'underline') return `<span style="text-decoration:underline;color:#e8e8e8">${esc}</span>`;
-    if (t.type === 'bold') return `<span style="font-weight:bold;color:#fff">${esc}</span>`;
-    if (t.type === 'gray') return `<span style="color:#555">${esc}</span>`;
-    return `<span>${esc}</span>`;
+    if (t.type === 'underline') return renderSegment(t.text, { underline: true,  bold: false, gray: false });
+    if (t.type === 'gray')      return renderSegment(t.text, { underline: false, bold: false, gray: true  });
+    if (t.type === 'bold')      return renderSegment(t.text, { underline: false, bold: true,  gray: false });
+    return renderSegment(t.text, { underline: false, bold: false, gray: false });
   }).join('');
+}
+
+function visualizeSpaces(text) {
+  return text.replace(/&/g,'&amp;').replace(/</g,'&lt;');
 }
 
 function updatePreview() {
   const lines = editor.value.split('\n');
-  preview.innerHTML = lines.map(line => {
+  const lastIdx = lines.length - 1;
+  let prevSpeaker = null;
+  preview.innerHTML = lines.map((line, idx) => {
+    const nl = idx < lastIdx
+      ? '<span style="color:#c8b8e8;font-size:11px;user-select:none">↵</span>'
+      : '';
     const m = line.match(/^([A-Z]\??):(.*)$/);
-    if (!m) return `<div class="plain-line">${line.replace(/&/g,'&amp;').replace(/</g,'&lt;') || '&nbsp;'}</div>`;
+    if (!m) {
+      prevSpeaker = null;
+      return `<div class="plain-line">${renderTokens(parseTokens(line))}${nl}</div>`;
+    }
     const [, speaker, rest] = m;
+    const letter = speaker.replace('?', '');
     const isQ = speaker.includes('?');
-    const tokens = parseTokens(rest);
-    return `<div class="preview-line">
-      <span class="speaker ${isQ ? 'question' : ''}">${speaker}:</span>
-      <span>${renderTokens(tokens)}</span>
+    const speakerClass = `speaker speaker-${letter.toLowerCase()} ${isQ ? 'question' : ''}`;
+    const divider = prevSpeaker !== null && prevSpeaker !== letter
+      ? '<div style="border-top:1px solid #ddd;margin:4px 0;"></div>'
+      : '';
+    prevSpeaker = letter;
+    return `${divider}<div class="preview-line">
+      <span class="${speakerClass}">${speaker}:</span>
+      <span>${renderTokens(parseTokens(rest))}${nl}</span>
     </div>`;
   }).join('');
 }
 
+// ── Copy ──────────────────────────────────────────────────────
 function copyOutput() {
-  navigator.clipboard.writeText(editor.value).then(() => {
-    const btn = document.getElementById('btn-copy');
-    btn.textContent = 'Copied ✓';
-    btn.classList.add('copied');
-    setTimeout(() => { btn.textContent = 'Copy output'; btn.classList.remove('copied'); }, 2000);
-  });
+  const text = editor.value;
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(text).then(showCopied).catch(() => fallbackCopy(text));
+  } else {
+    fallbackCopy(text);
+  }
+}
+
+function fallbackCopy(text) {
+  const tmp = document.createElement('textarea');
+  tmp.value = text;
+  tmp.style.position = 'fixed';
+  tmp.style.opacity = '0';
+  document.body.appendChild(tmp);
+  tmp.focus();
+  tmp.select();
+  try { document.execCommand('copy'); showCopied(); } catch(e) {}
+  document.body.removeChild(tmp);
+}
+
+function showCopied() {
+  const btn = document.getElementById('btn-copy');
+  btn.textContent = 'Copied ✓';
+  btn.classList.add('copied');
+  setTimeout(() => { btn.textContent = 'Copy output'; btn.classList.remove('copied'); }, 2000);
 }
 
 updatePreview();
+updateUndoRedoBtns();
 </script>
 </body>
 </html>
