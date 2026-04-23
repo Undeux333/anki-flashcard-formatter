@@ -205,6 +205,13 @@
     <span class="shortcut-hint">&nbsp;</span>
   </div>
 
+  <div class="divider"></div>
+
+  <div class="btn-wrap">
+    <button id="btn-clear" onclick="clearFormatting()" style="color:#c87a7a;">Clear</button>
+    <span class="shortcut-hint">&nbsp;</span>
+  </div>
+
 </div>
 
 <div class="panes-wrapper" id="panesWrapper">
@@ -336,15 +343,43 @@ function onInput() {
 }
 
 // ── Format helpers ─────────────────────────────────────────────
+
+// 選択範囲内にそのマーカーのペアが存在するか判定
+function hasMarkerPair(text, open, close) {
+  if (open === close) {
+    // _ や ++ は同じ記号なので2個以上あればペアあり
+    return (text.split(open).length - 1) >= 2;
+  }
+  return text.includes(open) && text.includes(close);
+}
+
+// 選択範囲内からマーカーをすべて除去
+function stripMarkers(text, open, close) {
+  let result = text.split(open).join('');
+  if (open !== close) result = result.split(close).join('');
+  return result;
+}
+
 function applyFormat(open, close) {
   const start = editor.selectionStart;
-  const end = editor.selectionEnd;
+  const end   = editor.selectionEnd;
   if (start === end) return;
-  const val = editor.value;
-  editor.value = val.slice(0, start) + open + val.slice(start, end) + close + val.slice(end);
-  const newPos = end + open.length + close.length;
-  editor.focus();
-  editor.setSelectionRange(newPos, newPos);
+  const val      = editor.value;
+  const selected = val.slice(start, end);
+
+  if (hasMarkerPair(selected, open, close)) {
+    // 選択範囲内にマーカーがある → 除去
+    const stripped = stripMarkers(selected, open, close);
+    editor.value = val.slice(0, start) + stripped + val.slice(end);
+    editor.focus();
+    editor.setSelectionRange(start, start + stripped.length);
+  } else {
+    // マーカーなし → 適用
+    editor.value = val.slice(0, start) + open + selected + close + val.slice(end);
+    editor.focus();
+    editor.setSelectionRange(start, end + open.length + close.length);
+  }
+
   saveHistory();
   updatePreview();
 }
@@ -511,6 +546,25 @@ function updatePreview() {
       <span>${renderTokens(parseTokens(rest))}${nl}</span>
     </div>`;
   }).join('');
+}
+
+// ── Clear formatting ──────────────────────────────────────────
+function clearFormatting() {
+  const lines = editor.value.split('\n');
+  const cleared = lines.map(line => {
+    const m = line.match(/^([A-Z])(\??)(:)(.*)/);
+    const prefix  = m ? m[1] + m[3] : '';   // A: / B: (?を除去)
+    const content = m ? m[4] : line;
+    const stripped = content
+      .split('_').join('')
+      .split('(').join('')
+      .split(')').join('');
+      // ++ はグレーアウトなので対象外
+    return prefix + stripped;
+  });
+  editor.value = cleared.join('\n');
+  saveHistory();
+  updatePreview();
 }
 
 // ── Copy ──────────────────────────────────────────────────────
