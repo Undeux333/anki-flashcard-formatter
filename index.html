@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Anki Manual Formatter</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    min-height: 100vh;
+    background: #111;
+    font-family: 'Courier New', monospace;
+    color: #ccc;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 36px 20px;
+  }
+
+  .header { width: 100%; max-width: 760px; margin-bottom: 24px; }
+  .header-label { font-size: 10px; letter-spacing: 5px; color: #555; text-transform: uppercase; margin-bottom: 6px; }
+  .header-line { height: 1px; background: linear-gradient(90deg, #e8c27a44, transparent); }
+
+  .toolbar {
+    width: 100%; max-width: 760px;
+    display: flex; gap: 8px; margin-bottom: 12px;
+    flex-wrap: wrap; align-items: center;
+  }
+  .toolbar-label { font-size: 10px; color: #444; letter-spacing: 2px; margin-right: 4px; }
+
+  button {
+    background: #1c1c1c;
+    border: 1px solid #2a2a2a;
+    color: #bbb;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    padding: 6px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+  button:hover { border-color: #e8c27a; }
+
+  #btn-underline { text-decoration: underline; }
+  #btn-bold { font-weight: bold; }
+  #btn-gray { color: #666; }
+  #btn-question { color: #c0a8e8; letter-spacing: 1px; }
+  #btn-question:hover { border-color: #c0a8e8; }
+
+  .legend {
+    margin-left: auto;
+    display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+  }
+  .legend span { font-size: 10px; color: #555; }
+  .legend .q { color: #7a6aaa; }
+
+  .panes {
+    width: 100%; max-width: 760px;
+    display: flex; gap: 12px;
+  }
+  .pane { flex: 1; }
+  .pane-label { font-size: 9px; letter-spacing: 3px; color: #444; text-transform: uppercase; margin-bottom: 6px; }
+
+  textarea {
+    width: 100%; height: 380px;
+    background: #151515;
+    border: 1px solid #222;
+    border-radius: 6px;
+    color: #ccc;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    line-height: 1.8;
+    padding: 14px;
+    resize: none;
+    outline: none;
+  }
+  textarea:focus { border-color: #e8c27a55; }
+
+  #preview {
+    height: 380px;
+    background: #151515;
+    border: 1px solid #222;
+    border-radius: 6px;
+    padding: 14px;
+    overflow-y: auto;
+    line-height: 1.8;
+    font-size: 13px;
+  }
+
+  .preview-line { display: flex; gap: 8px; margin-bottom: 2px; }
+  .speaker { color: #e8c27a; font-weight: bold; min-width: 28px; flex-shrink: 0; }
+  .speaker.question { color: #c0a8e8; }
+  .plain-line { color: #888; min-height: 22px; }
+
+  .actions {
+    width: 100%; max-width: 760px;
+    margin-top: 12px; display: flex; justify-content: flex-end;
+  }
+  #btn-copy { font-size: 11px; letter-spacing: 2px; padding: 8px 20px; color: #888; }
+  #btn-copy.copied { border-color: #a8d8a8; color: #a8d8a8; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-label">Anki / Manual Formatter</div>
+  <div class="header-line"></div>
+</div>
+
+<div class="toolbar">
+  <span class="toolbar-label">SELECT → APPLY:</span>
+  <button id="btn-underline" onclick="applyFormat('_','_')" title="アンダーライン _text_">U</button>
+  <button id="btn-bold" onclick="applyFormat('(',')')" title="太字 (text)">B</button>
+  <button id="btn-gray" onclick="applyFormat('++','++')" title="グレーアウト ++text++">G</button>
+  <button id="btn-question" onclick="toggleQuestion()" title="問題形式トグル A?:">A?</button>
+  <div class="legend">
+    <span>_underline_</span>
+    <span style="font-weight:bold">(bold)</span>
+    <span style="color:#444">++gray++</span>
+    <span class="q">A?:</span>
+  </div>
+</div>
+
+<div class="panes">
+  <div class="pane">
+    <div class="pane-label">Edit</div>
+    <textarea id="editor" oninput="updatePreview()">A: I'm still on the fence about taking the job.
+B: Yeah, I get it. It's a big decision.
+B: What's the main thing holding you back?
+A: The pay's great, but the commute's gonna be really long.
+B: How long are we talking?
+A: Probably like an hour and a half each way.
+B: Yeah, that's rough. That'll wear you out.</textarea>
+  </div>
+  <div class="pane">
+    <div class="pane-label">Preview</div>
+    <div id="preview"></div>
+  </div>
+</div>
+
+<div class="actions">
+  <button id="btn-copy" onclick="copyOutput()">Copy output</button>
+</div>
+
+<script>
+const editor = document.getElementById('editor');
+const preview = document.getElementById('preview');
+
+function applyFormat(open, close) {
+  const start = editor.selectionStart;
+  const end = editor.selectionEnd;
+  if (start === end) return;
+  const val = editor.value;
+  const selected = val.slice(start, end);
+  editor.value = val.slice(0, start) + open + selected + close + val.slice(end);
+  const newPos = end + open.length + close.length;
+  editor.focus();
+  editor.setSelectionRange(newPos, newPos);
+  updatePreview();
+}
+
+function toggleQuestion() {
+  const pos = editor.selectionStart;
+  const val = editor.value;
+  const lineStart = val.lastIndexOf('\n', pos - 1) + 1;
+  const lineEndRaw = val.indexOf('\n', pos);
+  const lineEnd = lineEndRaw === -1 ? val.length : lineEndRaw;
+  const line = val.slice(lineStart, lineEnd);
+  const match = line.match(/^([A-Z])(\?)?:/);
+  if (!match) return;
+  let newLine;
+  if (match[2]) {
+    newLine = line[0] + ':' + line.slice(3);
+  } else {
+    newLine = line[0] + '?:' + line.slice(2);
+  }
+  editor.value = val.slice(0, lineStart) + newLine + val.slice(lineEnd);
+  const offset = match[2] ? -1 : 1;
+  editor.focus();
+  editor.setSelectionRange(pos + offset, pos + offset);
+  updatePreview();
+}
+
+function parseTokens(text) {
+  const tokens = [];
+  let i = 0;
+  while (i < text.length) {
+    if (text[i] === '_') {
+      const end = text.indexOf('_', i + 1);
+      if (end !== -1) { tokens.push({ type: 'underline', text: text.slice(i+1, end) }); i = end+1; continue; }
+    }
+    if (text.slice(i, i+2) === '++') {
+      const end = text.indexOf('++', i+2);
+      if (end !== -1) { tokens.push({ type: 'gray', text: text.slice(i+2, end) }); i = end+2; continue; }
+    }
+    if (text[i] === '(') {
+      const end = text.indexOf(')', i+1);
+      if (end !== -1) { tokens.push({ type: 'bold', text: text.slice(i+1, end) }); i = end+1; continue; }
+    }
+    if (tokens.length && tokens[tokens.length-1].type === 'plain') {
+      tokens[tokens.length-1].text += text[i];
+    } else {
+      tokens.push({ type: 'plain', text: text[i] });
+    }
+    i++;
+  }
+  return tokens;
+}
+
+function renderTokens(tokens) {
+  return tokens.map(t => {
+    const esc = t.text.replace(/&/g,'&amp;').replace(/</g,'&lt;');
+    if (t.type === 'underline') return `<span style="text-decoration:underline;color:#e8e8e8">${esc}</span>`;
+    if (t.type === 'bold') return `<span style="font-weight:bold;color:#fff">${esc}</span>`;
+    if (t.type === 'gray') return `<span style="color:#555">${esc}</span>`;
+    return `<span>${esc}</span>`;
+  }).join('');
+}
+
+function updatePreview() {
+  const lines = editor.value.split('\n');
+  preview.innerHTML = lines.map(line => {
+    const m = line.match(/^([A-Z]\??):(.*)$/);
+    if (!m) return `<div class="plain-line">${line.replace(/&/g,'&amp;').replace(/</g,'&lt;') || '&nbsp;'}</div>`;
+    const [, speaker, rest] = m;
+    const isQ = speaker.includes('?');
+    const tokens = parseTokens(rest);
+    return `<div class="preview-line">
+      <span class="speaker ${isQ ? 'question' : ''}">${speaker}:</span>
+      <span>${renderTokens(tokens)}</span>
+    </div>`;
+  }).join('');
+}
+
+function copyOutput() {
+  navigator.clipboard.writeText(editor.value).then(() => {
+    const btn = document.getElementById('btn-copy');
+    btn.textContent = 'Copied ✓';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy output'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+updatePreview();
+</script>
+</body>
+</html>
