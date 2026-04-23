@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,19 +15,17 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 20px 12px;
+    padding: 0 12px 20px;
   }
-
-  .header { width: 100%; max-width: 1600px; margin-bottom: 24px; }
-  .header-label { font-size: 10px; letter-spacing: 5px; color: #555; text-transform: uppercase; margin-bottom: 6px; }
-  .header-line { height: 1px; background: linear-gradient(90deg, #e8c27a44, transparent); }
 
   .toolbar {
-    width: 100%; max-width: 1600px;
+    width: 100%;
     display: flex; gap: 8px; margin-bottom: 12px;
     flex-wrap: wrap; align-items: center;
+    position: sticky; top: 0; z-index: 100;
+    background: #111;
+    padding: 10px 0 10px;
   }
-  .toolbar-label { font-size: 10px; color: #444; letter-spacing: 2px; margin-right: 4px; }
 
   button {
     background: #1c1c1c;
@@ -50,60 +48,111 @@
   #btn-question:hover:not(:disabled) { border-color: #c0a8e8; }
   #btn-speaker-a { color: #c0392b; }
   #btn-speaker-b { color: #a8c8e8; }
+  #btn-copyall { color: #5898c8; border-color: #5898c844; }
+  #btn-copyall:hover:not(:disabled) { border-color: #5898c8; }
+  #btn-delete { color: #c85858; border-color: #c8585844; }
+  #btn-delete:hover:not(:disabled) { border-color: #c85858; }
+  #btn-deleteall { color: #c85858; border-color: #c8585844; }
+  #btn-deleteall:hover:not(:disabled) { border-color: #c85858; }
 
   .divider { width: 1px; height: 24px; background: #2a2a2a; margin: 0 4px; }
   .btn-wrap { display: flex; flex-direction: column; align-items: center; }
   .shortcut-hint { font-size: 9px; color: #444; display: block; text-align: center; margin-top: 2px; }
-  .legend { margin-left: auto; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
 
-  /* Panes */
-  .panes-wrapper {
+  /* Cards list */
+  .cards-list {
     width: 100%; max-width: 1600px;
     display: flex;
+    flex-direction: column;
     gap: 0;
-    height: 560px;
+  }
+
+  /* Wrapper: index label + card row side by side */
+  .card-wrap {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .card-index {
+    font-size: 11px;
+    color: #333;
+    letter-spacing: 1px;
+    min-width: 24px;
+    text-align: right;
+    padding-top: 10px;
+    user-select: none;
+    flex-shrink: 0;
+  }
+
+  .card-row {
+    display: flex;
+    gap: 0;
+    height: 260px;
     min-height: 120px;
     align-items: flex-start;
-  }
-
-  .pane { display: flex; flex-direction: column; min-width: 80px; flex: 1; height: 100%; }
-  .pane-label {
-    font-size: 9px; letter-spacing: 3px; text-transform: uppercase;
-    margin-bottom: 6px; flex-shrink: 0;
-    padding: 3px 10px; border-radius: 3px;
-    display: inline-block; align-self: flex-start;
-  }
-  #paneLeft .pane-label { color: #888; background: #88888818; border: 1px solid #88888833; }
-  #paneRight .pane-label { color: #888; background: #88888818; border: 1px solid #88888833; }
-
-  #editor {
-    flex: 1;
-    width: 100%;
-    background: #151515;
-    border: 1px solid #e8c27a33;
+    border: 1px solid #e8c27a22;
     border-radius: 6px;
-    color: #ccc;
+    overflow: hidden;
+    transition: border-color 0.15s;
+  }
+  .card-row.focused { border-color: #e8c27a55; }
+
+  .card-pane { display: flex; flex-direction: column; min-width: 80px; flex: 1; height: 100%; }
+
+  /* Editor = transparent textarea on top of styled overlay */
+  .editor-container {
+    position: relative;
+    flex: 1;
+    overflow: hidden;
+    background: #151515;
+  }
+  .card-editor {
+    position: absolute;
+    inset: 0;
+    background: transparent;
+    color: transparent;
+    caret-color: #c8c8c8;
+    border: none;
     font-family: 'Meiryo UI', 'メイリオ', sans-serif;
     font-size: 13px;
     line-height: 1.8;
     padding: 14px;
     outline: none;
     resize: none;
+    z-index: 2;
+    overflow-y: auto;
+    overflow-x: hidden;
+    white-space: pre-wrap;
+    word-break: break-word;
   }
-  #editor:focus { border-color: #e8c27a88; }
+  .card-editor-overlay {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    font-family: 'Meiryo UI', 'メイリオ', sans-serif;
+    font-size: 13px;
+    line-height: 1.8;
+    padding: 14px;
+    white-space: pre-wrap;
+    word-break: break-word;
+    overflow: hidden;
+    color: #ccc;
+  }
 
-  /* Horizontal splitter */
-  .splitter {
+  .card-splitter {
     width: 10px;
     cursor: col-resize;
     flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    align-self: center;
+    align-self: stretch;
     user-select: none;
+    background: #131313;
   }
-  .splitter::after {
+  .card-splitter::after {
     content: '';
     display: block;
     width: 2px;
@@ -112,39 +161,36 @@
     border-radius: 2px;
     transition: background 0.15s;
   }
-  .splitter:hover::after, .splitter.dragging::after { background: #e8c27a; }
+  .card-splitter:hover::after, .card-splitter.dragging::after { background: #e8c27a; }
 
-  #preview {
+  .card-preview {
     flex: 1;
     background: #fdf5e0;
-    border: 1px solid #a8c8e855;
-    border-radius: 6px;
     padding: 14px;
     overflow-y: auto;
     line-height: 1.8;
     font-size: 13px;
+    height: 100%;
   }
 
-  /* Vertical resize handle */
-  .resize-handle {
+  .card-resize {
     width: 100%; max-width: 1600px;
-    height: 12px;
+    height: 10px;
     cursor: ns-resize;
     display: flex;
     justify-content: center;
     align-items: center;
-    margin-top: 2px;
     user-select: none;
   }
-  .resize-handle::after {
+  .card-resize::after {
     content: '';
     display: block;
     width: 48px; height: 3px;
-    background: #2a2a2a;
+    background: #1e1e1e;
     border-radius: 2px;
     transition: background 0.15s;
   }
-  .resize-handle:hover::after, .resize-handle.dragging::after { background: #e8c27a; }
+  .card-resize:hover::after, .card-resize.dragging::after { background: #e8c27a; }
 
   .preview-line { display: flex; gap: 8px; margin-bottom: 2px; }
   .speaker { font-weight: bold; min-width: 28px; flex-shrink: 0; }
@@ -153,7 +199,8 @@
   .speaker.question { color: #7060b0; }
   .plain-line { color: #999; min-height: 22px; }
 
-  #btn-copy.copied { border-color: #a8d8a8; color: #a8d8a8; }
+  .btn-flashed { border-color: #a8d8a8 !important; color: #a8d8a8 !important; }
+  .btn-flashed-blue { border-color: #a8c8e8 !important; color: #a8c8e8 !important; }
 </style>
 </head>
 <body>
@@ -204,239 +251,406 @@
     <button id="btn-copy" onclick="copyOutput()">Copy</button>
     <span class="shortcut-hint">&nbsp;</span>
   </div>
+  <div class="btn-wrap">
+    <button id="btn-copyall" onclick="copyAll()">Copy All</button>
+    <span class="shortcut-hint">&nbsp;</span>
+  </div>
 
   <div class="divider"></div>
 
   <div class="btn-wrap">
-    <button id="btn-clear" onclick="clearFormatting()" style="color:#c87a7a;">Clear</button>
+    <button id="btn-clear" onclick="clearFormatting()" style="color:#c8a050;">Clear</button>
+    <span class="shortcut-hint">&nbsp;</span>
+  </div>
+  <div class="btn-wrap">
+    <button id="btn-clearall" onclick="clearAll()" style="color:#c8a050;">Clear All</button>
     <span class="shortcut-hint">&nbsp;</span>
   </div>
 
-</div>
+  <div class="divider"></div>
 
-<div class="panes-wrapper" id="panesWrapper">
-  <div class="pane" id="paneLeft">
-    <div class="pane-label">Edit</div>
-    <textarea id="editor" oninput="onInput()"></textarea>
+  <div class="btn-wrap">
+    <button id="btn-delete" onclick="deleteCard()">Delete</button>
+    <span class="shortcut-hint">&nbsp;</span>
   </div>
-  <div class="splitter" id="splitter"></div>
-  <div class="pane" id="paneRight">
-    <div class="pane-label">Preview</div>
-    <div id="preview"></div>
+  <div class="btn-wrap">
+    <button id="btn-deleteall" onclick="deleteAll()">Delete All</button>
+    <span class="shortcut-hint">&nbsp;</span>
   </div>
 </div>
-<div class="resize-handle" id="resizeHandle"></div>
 
-
+<div class="cards-list" id="cardsList"></div>
 
 <script>
-const editor = document.getElementById('editor');
-const preview = document.getElementById('preview');
-const btnUndo = document.getElementById('btn-undo');
-const btnRedo = document.getElementById('btn-redo');
-const wrapper = document.getElementById('panesWrapper');
-const paneLeft = document.getElementById('paneLeft');
-const paneRight = document.getElementById('paneRight');
-const splitter = document.getElementById('splitter');
-const resizeHandle = document.getElementById('resizeHandle');
+// ── State ──────────────────────────────────────────────────────
+let cards = [{ id: 1, value: '' }];
+let nextId = 2;
+let focusedId = 1;
 
-// ── Vertical resize ────────────────────────────────────────────
-let vDragging = false, vStartY, vStartH;
-resizeHandle.addEventListener('mousedown', e => {
-  vDragging = true;
-  vStartY = e.clientY;
-  vStartH = wrapper.offsetHeight;
-  resizeHandle.classList.add('dragging');
-  e.preventDefault();
-});
-document.addEventListener('mousemove', e => {
-  if (!vDragging) return;
-  const h = Math.max(120, vStartH + (e.clientY - vStartY));
-  wrapper.style.height = h + 'px';
-});
-document.addEventListener('mouseup', () => {
-  vDragging = false;
-  resizeHandle.classList.remove('dragging');
-});
+// Per-card undo/redo history
+const histories = {};
 
-// ── Horizontal resize (splitter) ──────────────────────────────
-// Initialize 50/50 split
-paneLeft.style.flex = 'none';
-paneRight.style.flex = 'none';
-function initSplit() {
-  const total = wrapper.offsetWidth - splitter.offsetWidth;
-  paneLeft.style.width = (total / 2) + 'px';
-  paneRight.style.width = (total / 2) + 'px';
+function getHist(id) {
+  if (!histories[id]) histories[id] = { stack: [{ value: '', selStart: 0, selEnd: 0 }], index: 0 };
+  return histories[id];
 }
-initSplit();
 
-let hDragging = false, hStartX, hLeftW;
-splitter.addEventListener('mousedown', e => {
-  hDragging = true;
-  hStartX = e.clientX;
-  hLeftW = paneLeft.offsetWidth;
-  splitter.classList.add('dragging');
-  e.preventDefault();
-});
-document.addEventListener('mousemove', e => {
-  if (!hDragging) return;
-  const total = wrapper.offsetWidth - splitter.offsetWidth;
-  const newW = Math.max(80, Math.min(total - 80, hLeftW + (e.clientX - hStartX)));
-  paneLeft.style.width = newW + 'px';
-  paneRight.style.width = (total - newW) + 'px';
-});
-document.addEventListener('mouseup', () => {
-  hDragging = false;
-  splitter.classList.remove('dragging');
-});
+// Initialize history for a card with its actual starting content
+function initHist(id, value) {
+  histories[id] = { stack: [{ value: value, selStart: 0, selEnd: 0 }], index: 0 };
+}
 
-// ── Undo/Redo ─────────────────────────────────────────────────
-let history = [{ value: '', selStart: 0, selEnd: 0 }];
-let histIndex = 0;
-let isUndoRedo = false;
-
-function saveHistory() {
-  history = history.slice(0, histIndex + 1);
-  history.push({ value: editor.value, selStart: editor.selectionStart, selEnd: editor.selectionEnd });
-  if (history.length > 200) history.shift();
-  histIndex = history.length - 1;
+function saveHistory(id, value, selStart, selEnd) {
+  const h = getHist(id);
+  // Don't push duplicate
+  const cur = h.stack[h.index];
+  if (cur && cur.value === value) { updateUndoRedoBtns(); return; }
+  h.stack = h.stack.slice(0, h.index + 1);
+  h.stack.push({ value, selStart, selEnd });
+  if (h.stack.length > 200) h.stack.shift();
+  h.index = h.stack.length - 1;
   updateUndoRedoBtns();
 }
 
 function undo() {
-  if (histIndex <= 0) return;
-  histIndex--;
-  isUndoRedo = true;
-  const s = history[histIndex];
-  editor.value = s.value;
-  editor.setSelectionRange(s.selStart, s.selEnd);
-  editor.focus();
-  isUndoRedo = false;
-  updatePreview();
-  updateUndoRedoBtns();
+  const h = getHist(focusedId);
+  if (h.index > 0) {
+    // Text-level undo within the focused card
+    h.index--;
+    restoreHistory(focusedId, h.stack[h.index]);
+  } else if (deletedStack.length > 0) {
+    // Structural undo: restore cards deleted by Delete / Delete All
+    const snap = deletedStack.pop();
+    cards = snap.cards;
+    focusedId = snap.focusedId;
+    // histories for the restored card ids are still intact in the histories object
+    render();
+    requestAnimationFrame(() => {
+      const ed = getEditor(focusedId);
+      if (ed) ed.focus();
+      updateUndoRedoBtns();
+    });
+  }
 }
 
 function redo() {
-  if (histIndex >= history.length - 1) return;
-  histIndex++;
-  isUndoRedo = true;
-  const s = history[histIndex];
-  editor.value = s.value;
-  editor.setSelectionRange(s.selStart, s.selEnd);
-  editor.focus();
-  isUndoRedo = false;
-  updatePreview();
+  const h = getHist(focusedId);
+  if (h.index >= h.stack.length - 1) return;
+  h.index++;
+  restoreHistory(focusedId, h.stack[h.index]);
+}
+
+function restoreHistory(id, state) {
+  const ed = getEditor(id); if (!ed) return;
+  ed.value = state.value;
+  ed.setSelectionRange(state.selStart, state.selEnd);
+  ed.focus();
+  const card = cards.find(c => c.id === id);
+  if (card) card.value = state.value;
+  updateOverlay(id);
+  updatePreview(id);
   updateUndoRedoBtns();
 }
 
 function updateUndoRedoBtns() {
-  btnUndo.disabled = histIndex <= 0;
-  btnRedo.disabled = histIndex >= history.length - 1;
+  const h = getHist(focusedId);
+  document.getElementById('btn-undo').disabled = h.index <= 0 && deletedStack.length === 0;
+  document.getElementById('btn-redo').disabled = h.index >= h.stack.length - 1;
 }
 
-let inputTimer = null;
-function onInput() {
-  updatePreview();
-  if (isUndoRedo) return;
-  clearTimeout(inputTimer);
-  inputTimer = setTimeout(saveHistory, 600);
+// Debounced save on free typing
+const inputTimers = {};
+function onInput(id) {
+  const ed = getEditor(id); if (!ed) return;
+  const card = cards.find(c => c.id === id);
+  if (card) card.value = ed.value;
+  updateOverlay(id);
+  updatePreview(id);
+  clearTimeout(inputTimers[id]);
+  inputTimers[id] = setTimeout(() => {
+    const ed2 = getEditor(id); if (!ed2) return;
+    saveHistory(id, ed2.value, ed2.selectionStart, ed2.selectionEnd);
+  }, 600);
 }
 
-// ── Format helpers ─────────────────────────────────────────────
+// ── Editor overlay renderer ────────────────────────────────────
+function escH(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
-// 選択範囲内にそのマーカーのペアが存在するか判定
-function hasMarkerPair(text, open, close) {
-  if (open === close) {
-    // _ や ++ は同じ記号なので2個以上あればペアあり
-    return (text.split(open).length - 1) >= 2;
+function renderOverlayInline(text) {
+  let html = '', i = 0;
+  const mk = 'color:#c8a050;'; // marker color (amber)
+  while (i < text.length) {
+    if (text[i] === '_') {
+      const end = text.indexOf('_', i + 1);
+      if (end !== -1) {
+        html += '<span style="' + mk + '">_</span>';
+        html += renderOverlayInline(text.slice(i+1, end));
+        html += '<span style="' + mk + '">_</span>';
+        i = end + 1; continue;
+      }
+    }
+    if (text.slice(i,i+2) === '++') {
+      const end = text.indexOf('++', i + 2);
+      if (end !== -1) {
+        html += '<span style="' + mk + '">++</span>';
+        html += escH(text.slice(i+2, end));
+        html += '<span style="' + mk + '">++</span>';
+        i = end + 2; continue;
+      }
+    }
+    if (text[i] === '(') {
+      const end = text.indexOf(')', i + 1);
+      if (end !== -1) {
+        html += '<span style="' + mk + '">(</span>';
+        html += renderOverlayInline(text.slice(i+1, end));
+        html += '<span style="' + mk + '">)</span>';
+        i = end + 1; continue;
+      }
+    }
+    html += escH(text[i]); i++;
   }
+  return html;
+}
+
+function renderOverlayLine(line) {
+  const m = line.match(/^([A-Z])(\??):(.*)$/);
+  if (m) {
+    const baseColor = m[1] === 'A' ? '#c04040' : m[1] === 'B' ? '#4888c0' : '#aaa';
+    const labelColor = m[2] === '?' ? '#8868c0' : baseColor;
+    return '<span style="color:' + labelColor + ';">' + escH(m[1] + m[2] + ':') + '</span>' + renderOverlayInline(m[3]);
+  }
+  return renderOverlayInline(line);
+}
+
+function updateOverlay(id) {
+  const card = cards.find(c => c.id === id);
+  const el = document.getElementById('ov-' + id);
+  if (!card || !el) return;
+  el.innerHTML = card.value.split('\n').map(line =>
+    '<div style="min-height:1.8em;">' + (renderOverlayLine(line) || '\u200b') + '</div>'
+  ).join('');
+  const ed = getEditor(id);
+  if (ed) el.scrollTop = ed.scrollTop;
+}
+
+// ── Helpers ────────────────────────────────────────────────────
+function getEditor(id) { return document.getElementById('ed-' + id); }
+function getFocusedEditor() { return getEditor(focusedId); }
+
+// ── Format functions (original logic) ─────────────────────────
+function hasMarkerPair(text, open, close) {
+  if (open === close) return (text.split(open).length - 1) >= 2;
   return text.includes(open) && text.includes(close);
 }
-
-// 選択範囲内からマーカーをすべて除去
 function stripMarkers(text, open, close) {
-  let result = text.split(open).join('');
-  if (open !== close) result = result.split(close).join('');
-  return result;
+  let r = text.split(open).join('');
+  if (open !== close) r = r.split(close).join('');
+  return r;
 }
 
 function applyFormat(open, close) {
-  const start = editor.selectionStart;
-  const end   = editor.selectionEnd;
+  const ed = getFocusedEditor(); if (!ed) return;
+  const start = ed.selectionStart, end = ed.selectionEnd;
   if (start === end) return;
-  const val      = editor.value;
-  const selected = val.slice(start, end);
-
-  if (hasMarkerPair(selected, open, close)) {
-    // 選択範囲内にマーカーがある → 除去
-    const stripped = stripMarkers(selected, open, close);
-    editor.value = val.slice(0, start) + stripped + val.slice(end);
-    editor.focus();
-    editor.setSelectionRange(start, start + stripped.length);
+  const val = ed.value, sel = val.slice(start, end);
+  if (hasMarkerPair(sel, open, close)) {
+    const stripped = stripMarkers(sel, open, close);
+    ed.value = val.slice(0, start) + stripped + val.slice(end);
+    ed.focus(); ed.setSelectionRange(start, start + stripped.length);
   } else {
-    // マーカーなし → 適用
-    editor.value = val.slice(0, start) + open + selected + close + val.slice(end);
-    editor.focus();
-    editor.setSelectionRange(start, end + open.length + close.length);
+    ed.value = val.slice(0, start) + open + sel + close + val.slice(end);
+    ed.focus(); ed.setSelectionRange(start, end + open.length + close.length);
   }
-
-  saveHistory();
-  updatePreview();
+  const card = cards.find(c => c.id === focusedId);
+  if (card) card.value = ed.value;
+  saveHistory(focusedId, ed.value, ed.selectionStart, ed.selectionEnd);
+  updateOverlay(focusedId);
+  updatePreview(focusedId);
 }
 
 function toggleQuestion() {
-  const pos = editor.selectionStart;
-  const val = editor.value;
-  const lineStart = val.lastIndexOf('\n', pos - 1) + 1;
-  const lineEndRaw = val.indexOf('\n', pos);
-  const lineEnd = lineEndRaw === -1 ? val.length : lineEndRaw;
-  const line = val.slice(lineStart, lineEnd);
+  const ed = getFocusedEditor(); if (!ed) return;
+  const pos = ed.selectionStart, val = ed.value;
+  const ls = val.lastIndexOf('\n', pos - 1) + 1;
+  const leRaw = val.indexOf('\n', pos);
+  const le = leRaw === -1 ? val.length : leRaw;
+  const line = val.slice(ls, le);
   const match = line.match(/^([A-Z])(\?)?:/);
   if (!match) return;
-  const newLine = match[2]
-    ? line[0] + ':' + line.slice(3)
-    : line[0] + '?:' + line.slice(2);
-  editor.value = val.slice(0, lineStart) + newLine + val.slice(lineEnd);
+  const newLine = match[2] ? line[0] + ':' + line.slice(3) : line[0] + '?:' + line.slice(2);
+  ed.value = val.slice(0, ls) + newLine + val.slice(le);
   const offset = match[2] ? -1 : 1;
-  editor.focus();
-  editor.setSelectionRange(pos + offset, pos + offset);
-  saveHistory();
-  updatePreview();
+  ed.focus(); ed.setSelectionRange(pos + offset, pos + offset);
+  const card = cards.find(c => c.id === focusedId);
+  if (card) card.value = ed.value;
+  saveHistory(focusedId, ed.value, ed.selectionStart, ed.selectionEnd);
+  updateOverlay(focusedId);
+  updatePreview(focusedId);
 }
 
 function addSpeaker(label) {
-  const pos = editor.selectionStart;
-  const val = editor.value;
-  const lineStart = val.lastIndexOf('\n', pos - 1) + 1;
-  const lineEndRaw = val.indexOf('\n', pos);
-  const lineEnd = lineEndRaw === -1 ? val.length : lineEndRaw;
-  const line = val.slice(lineStart, lineEnd);
+  const ed = getFocusedEditor(); if (!ed) return;
+  const pos = ed.selectionStart, val = ed.value;
+  const ls = val.lastIndexOf('\n', pos - 1) + 1;
+  const leRaw = val.indexOf('\n', pos);
+  const le = leRaw === -1 ? val.length : leRaw;
+  const line = val.slice(ls, le);
   const newLine = line.match(/^[A-Z]\??:/)
     ? label + ':' + line.slice(line.indexOf(':') + 1)
     : label + ': ' + line;
-  editor.value = val.slice(0, lineStart) + newLine + val.slice(lineEnd);
-  editor.focus();
-  editor.setSelectionRange(lineStart + newLine.length, lineStart + newLine.length);
-  saveHistory();
-  updatePreview();
+  ed.value = val.slice(0, ls) + newLine + val.slice(le);
+  ed.focus(); ed.setSelectionRange(ls + newLine.length, ls + newLine.length);
+  const card = cards.find(c => c.id === focusedId);
+  if (card) card.value = ed.value;
+  saveHistory(focusedId, ed.value, ed.selectionStart, ed.selectionEnd);
+  updateOverlay(focusedId);
+  updatePreview(focusedId);
 }
 
-// ── Keyboard shortcuts ─────────────────────────────────────────
-document.addEventListener('keydown', e => {
-  if (!e.ctrlKey && !e.metaKey) return;
-  const key = e.key.toLowerCase();
-  if (key === 'z') { e.preventDefault(); undo(); return; }
-  if (key === 'y') { e.preventDefault(); redo(); return; }
-  if (document.activeElement !== editor) return;
-  if (key === 'u') { e.preventDefault(); applyFormat('_', '_'); }
-  if (key === 'b') { e.preventDefault(); applyFormat('(', ')'); }
-  if (key === 'g') { e.preventDefault(); applyFormat('++', '++'); }
-  if (key === 'q') { e.preventDefault(); toggleQuestion(); }
-  if (key === '1') { e.preventDefault(); addSpeaker('A'); }
-  if (key === '2') { e.preventDefault(); addSpeaker('B'); }
-});
+function clearFormatting() {
+  const ed = getFocusedEditor(); if (!ed) return;
+  // Save the CURRENT state to history BEFORE clearing, so Ctrl+Z can restore it
+  saveHistory(focusedId, ed.value, ed.selectionStart, ed.selectionEnd);
+  const cleared = ed.value.split('\n').map(line => {
+    const m = line.match(/^([A-Z])(\??)(:)(.*)/);
+    const prefix = m ? m[1] + m[3] : '';
+    const content = m ? m[4] : line;
+    return prefix + content.split('_').join('').split('(').join('').split(')').join('');
+  });
+  ed.value = cleared.join('\n');
+  const card = cards.find(c => c.id === focusedId);
+  if (card) card.value = ed.value;
+  saveHistory(focusedId, ed.value, ed.selectionStart, ed.selectionEnd);
+  updateOverlay(focusedId);
+  updatePreview(focusedId);
+}
 
-// ── Preview renderer ───────────────────────────────────────────
+// ── Copy / Copy All ────────────────────────────────────────────
+function doCopy(text, btnId, label) {
+  const btn = document.getElementById(btnId);
+  const doExec = () => {
+    const tmp = document.createElement('textarea');
+    tmp.value = text; tmp.style.cssText = 'position:fixed;opacity:0;top:0;left:0;';
+    document.body.appendChild(tmp); tmp.focus(); tmp.select();
+    try { document.execCommand('copy'); flash(btn, label); } catch(e) {}
+    document.body.removeChild(tmp);
+  };
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(text).then(() => flash(btn, label)).catch(doExec);
+  } else { doExec(); }
+}
+
+function flash(btn, label) {
+  const orig = btn.textContent;
+  btn.textContent = label;
+  btn.classList.add('btn-flashed');
+  setTimeout(() => { btn.textContent = orig; btn.classList.remove('btn-flashed'); }, 2000);
+}
+
+function copyOutput() {
+  const ed = getFocusedEditor(); if (!ed) return;
+  // Wrap in Excel single-cell quotes so newlines stay in one cell on paste
+  const singleCell = '"' + ed.value.replace(/"/g, '""') + '"';
+  doCopy(singleCell, 'btn-copy', 'Copied ✓');
+}
+
+function copyAll() {
+  // Each card = one Excel row (quoted if contains newlines)
+  const tsv = cards.map(c => {
+    const v = c.value;
+    if (v.includes('\n') || v.includes('\t') || v.includes('"')) return '"' + v.replace(/"/g, '""') + '"';
+    return v;
+  }).join('\r\n');
+  const btn = document.getElementById('btn-copyall');
+  const doExec = () => {
+    const tmp = document.createElement('textarea');
+    tmp.value = tsv; tmp.style.cssText = 'position:fixed;opacity:0;top:0;left:0;';
+    document.body.appendChild(tmp); tmp.focus(); tmp.select();
+    try { document.execCommand('copy'); flashBlue(btn); } catch(e) {}
+    document.body.removeChild(tmp);
+  };
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(tsv).then(() => flashBlue(btn)).catch(doExec);
+  } else { doExec(); }
+}
+
+function flashBlue(btn) {
+  const orig = btn.textContent;
+  btn.textContent = 'Copied ✓';
+  btn.classList.add('btn-flashed-blue');
+  setTimeout(() => { btn.textContent = orig; btn.classList.remove('btn-flashed-blue'); }, 2000);
+}
+
+// ── Excel TSV parse ────────────────────────────────────────────
+function parseExcelTSV(text) {
+  const results = [];
+  let i = 0, n = text.length;
+  while (i < n) {
+    let field = '';
+    if (text[i] === '"') {
+      i++;
+      while (i < n) {
+        if (text[i] === '"') {
+          if (i + 1 < n && text[i+1] === '"') { field += '"'; i += 2; }
+          else { i++; break; }
+        } else { field += text[i++]; }
+      }
+    } else {
+      while (i < n && text[i] !== '\t' && text[i] !== '\r' && text[i] !== '\n') field += text[i++];
+    }
+    results.push(field);
+    if (i < n && text[i] === '\t') { while (i < n && text[i] !== '\r' && text[i] !== '\n') i++; }
+    if (i < n && text[i] === '\r') i++;
+    if (i < n && text[i] === '\n') i++;
+  }
+  return results;
+}
+
+// ── Paste handler ──────────────────────────────────────────────
+function handlePaste(e, cardId) {
+  const text = e.clipboardData.getData('text');
+  const cells = parseExcelTSV(text);
+
+  if (cells.length <= 1) {
+    // Normal paste — save history after browser inserts text
+    setTimeout(() => {
+      const ed = getEditor(cardId); if (!ed) return;
+      const card = cards.find(c => c.id === cardId);
+      if (card) card.value = ed.value;
+      updatePreview(cardId);
+      saveHistory(cardId, ed.value, ed.selectionStart, ed.selectionEnd);
+    }, 0);
+    return;
+  }
+
+  // Multiple cells → split into cards
+  e.preventDefault();
+  const ed = e.target;
+  const before = ed.value.slice(0, ed.selectionStart);
+  const after  = ed.value.slice(ed.selectionEnd);
+
+  const idx = cards.findIndex(c => c.id === cardId);
+  const firstValue = before + cells[0] + after;
+  cards[idx].value = firstValue;
+  // Save current card's new value as initial history point
+  saveHistory(cardId, firstValue, firstValue.length, firstValue.length);
+
+  const newCards = cells.slice(1).map(v => ({ id: nextId++, value: v }));
+  cards.splice(idx + 1, 0, ...newCards);
+
+  // Initialize history for each new card with its actual content
+  // so Ctrl+Z doesn't wipe back to empty
+  newCards.forEach(c => initHist(c.id, c.value));
+
+  focusedId = newCards.length > 0 ? newCards[newCards.length - 1].id : cardId;
+  render();
+  requestAnimationFrame(() => {
+    const last = getEditor(focusedId);
+    if (last) { last.focus(); last.scrollIntoView({ block: 'nearest' }); }
+  });
+}
+
+// ── Preview renderer (original logic) ─────────────────────────
 function parseTokens(text) {
   const tokens = [];
   let i = 0;
@@ -453,11 +667,8 @@ function parseTokens(text) {
       const end = text.indexOf(')', i+1);
       if (end !== -1) { tokens.push({ type: 'bold', text: text.slice(i+1, end) }); i = end+1; continue; }
     }
-    if (tokens.length && tokens[tokens.length-1].type === 'plain') {
-      tokens[tokens.length-1].text += text[i];
-    } else {
-      tokens.push({ type: 'plain', text: text[i] });
-    }
+    if (tokens.length && tokens[tokens.length-1].type === 'plain') tokens[tokens.length-1].text += text[i];
+    else tokens.push({ type: 'plain', text: text[i] });
     i++;
   }
   return tokens;
@@ -466,20 +677,14 @@ function parseTokens(text) {
 function makeSpan(text, styles) {
   const esc = text.replace(/&/g, '&amp;').replace(/</g, '&lt;');
   let style = '';
-  if (styles.gray) {
-    style = 'color:#bbb;font-style:italic;';
-  } else {
-    style = styles.underline
-      ? 'text-decoration:underline;text-underline-offset:3px;text-decoration-color:#000;color:#111;'
-      : 'color:#222;';
-  }
+  if (styles.gray) style = 'color:#bbb;font-style:italic;';
+  else style = styles.underline ? 'text-decoration:underline;text-underline-offset:3px;text-decoration-color:#000;color:#111;' : 'color:#222;';
   if (styles.bold) style += 'font-weight:bold;font-size:1.1em;';
   return `<span style="${style}">${esc}</span>`;
 }
 
 function renderSegment(text, styles) {
-  const html = [];
-  let i = 0, last = 0;
+  const html = []; let i = 0, last = 0;
   while (i < text.length) {
     if (!styles.bold && text[i] === '(') {
       const end = text.indexOf(')', i + 1);
@@ -503,10 +708,6 @@ function renderSegment(text, styles) {
   return html.join('');
 }
 
-function styledSpan(text, underline, bold, gray) {
-  return makeSpan(text, { underline, bold, gray });
-}
-
 function renderTokens(tokens) {
   return tokens.map(t => {
     if (t.type === 'underline') return renderSegment(t.text, { underline: true,  bold: false, gray: false });
@@ -516,18 +717,15 @@ function renderTokens(tokens) {
   }).join('');
 }
 
-function visualizeSpaces(text) {
-  return text.replace(/&/g,'&amp;').replace(/</g,'&lt;');
-}
-
-function updatePreview() {
-  const lines = editor.value.split('\n');
+function updatePreview(id) {
+  const card = cards.find(c => c.id === id);
+  const pv = document.getElementById('pv-' + id);
+  if (!card || !pv) return;
+  const lines = card.value.split('\n');
   const lastIdx = lines.length - 1;
   let prevSpeaker = null;
-  preview.innerHTML = lines.map((line, idx) => {
-    const nl = idx < lastIdx
-      ? '<span style="color:#c8b8e8;font-size:11px;user-select:none">↵</span>'
-      : '';
+  pv.innerHTML = lines.map((line, idx) => {
+    const nl = idx < lastIdx ? '<span style="color:#c8b8e8;font-size:11px;user-select:none">↵</span>' : '';
     const m = line.match(/^([A-Z]\??):(.*)$/);
     if (!m) {
       prevSpeaker = null;
@@ -538,66 +736,192 @@ function updatePreview() {
     const isQ = speaker.includes('?');
     const speakerClass = `speaker speaker-${letter.toLowerCase()} ${isQ ? 'question' : ''}`;
     const divider = prevSpeaker !== null && prevSpeaker !== letter
-      ? '<div style="border-top:1px solid #ddd;margin:4px 0;"></div>'
-      : '';
+      ? '<div style="border-top:1px solid #ddd;margin:4px 0;"></div>' : '';
     prevSpeaker = letter;
-    return `${divider}<div class="preview-line">
-      <span class="${speakerClass}">${speaker}:</span>
-      <span>${renderTokens(parseTokens(rest))}${nl}</span>
-    </div>`;
+    return `${divider}<div class="preview-line"><span class="${speakerClass}">${speaker}:</span><span>${renderTokens(parseTokens(rest))}${nl}</span></div>`;
   }).join('');
 }
 
-// ── Clear formatting ──────────────────────────────────────────
-function clearFormatting() {
-  const lines = editor.value.split('\n');
-  const cleared = lines.map(line => {
-    const m = line.match(/^([A-Z])(\??)(:)(.*)/);
-    const prefix  = m ? m[1] + m[3] : '';   // A: / B: (?を除去)
-    const content = m ? m[4] : line;
-    const stripped = content
-      .split('_').join('')
-      .split('(').join('')
-      .split(')').join('');
-      // ++ はグレーアウトなので対象外
-    return prefix + stripped;
+// ── Splitter / Resize setup ────────────────────────────────────
+function setupVerticalResize(resizeEl, cardRow) {
+  let dragging = false, startY, startH;
+  resizeEl.addEventListener('mousedown', e => {
+    dragging = true; startY = e.clientY; startH = cardRow.offsetHeight;
+    resizeEl.classList.add('dragging'); e.preventDefault();
   });
-  editor.value = cleared.join('\n');
-  saveHistory();
-  updatePreview();
+  document.addEventListener('mousemove', e => {
+    if (!dragging) return;
+    cardRow.style.height = Math.max(120, startH + (e.clientY - startY)) + 'px';
+  });
+  document.addEventListener('mouseup', () => { if (dragging) { dragging = false; resizeEl.classList.remove('dragging'); } });
 }
 
-// ── Copy ──────────────────────────────────────────────────────
-function copyOutput() {
-  const text = editor.value;
-  if (navigator.clipboard && window.isSecureContext) {
-    navigator.clipboard.writeText(text).then(showCopied).catch(() => fallbackCopy(text));
-  } else {
-    fallbackCopy(text);
-  }
+function setupHorizontalSplit(splEl, leftPane, rightPane, cardRow) {
+  leftPane.style.flex = 'none'; rightPane.style.flex = 'none';
+  const init = () => {
+    const total = cardRow.offsetWidth - splEl.offsetWidth;
+    leftPane.style.width = (total / 2) + 'px';
+    rightPane.style.width = (total / 2) + 'px';
+  };
+  init();
+  let dragging = false, startX, leftW;
+  splEl.addEventListener('mousedown', e => {
+    dragging = true; startX = e.clientX; leftW = leftPane.offsetWidth;
+    splEl.classList.add('dragging'); e.preventDefault();
+  });
+  document.addEventListener('mousemove', e => {
+    if (!dragging) return;
+    const total = cardRow.offsetWidth - splEl.offsetWidth;
+    const newW = Math.max(80, Math.min(total - 80, leftW + (e.clientX - startX)));
+    leftPane.style.width = newW + 'px';
+    rightPane.style.width = (total - newW) + 'px';
+  });
+  document.addEventListener('mouseup', () => { if (dragging) { dragging = false; splEl.classList.remove('dragging'); } });
 }
 
-function fallbackCopy(text) {
-  const tmp = document.createElement('textarea');
-  tmp.value = text;
-  tmp.style.position = 'fixed';
-  tmp.style.opacity = '0';
-  document.body.appendChild(tmp);
-  tmp.focus();
-  tmp.select();
-  try { document.execCommand('copy'); showCopied(); } catch(e) {}
-  document.body.removeChild(tmp);
+// ── Clear All ──────────────────────────────────────────────────
+function clearAll() {
+  // Snapshot all card values before clearing — Ctrl+Z will restore everything at once
+  deletedStack.push({ cards: cards.map(c => ({ ...c })), focusedId });
+  cards.forEach(card => {
+    const cleared = card.value.split('\n').map(line => {
+      const m = line.match(/^([A-Z])(\??)(:)(.*)/);
+      const prefix = m ? m[1] + m[3] : '';
+      const content = m ? m[4] : line;
+      return prefix + content.split('_').join('').split('(').join('').split(')').join('');
+    }).join('\n');
+    card.value = cleared;
+    const ed = getEditor(card.id);
+    if (ed) ed.value = cleared;
+    updateOverlay(card.id);
+    updatePreview(card.id);
+  });
+  updateUndoRedoBtns();
 }
 
-function showCopied() {
-  const btn = document.getElementById('btn-copy');
-  btn.textContent = 'Copied ✓';
-  btn.classList.add('copied');
-  setTimeout(() => { btn.textContent = 'Copy output'; btn.classList.remove('copied'); }, 2000);
+// ── Delete ─────────────────────────────────────────────────────
+const deletedStack = [];   // structural snapshots for card-level undo
+
+function deleteCard() {
+  // Snapshot before delete so Ctrl+Z can restore
+  deletedStack.push({ cards: cards.map(c => ({ ...c })), focusedId });
+  if (cards.length <= 1) { cards[0].value = ''; initHist(cards[0].id, ''); render(); return; }
+  const idx = cards.findIndex(c => c.id === focusedId);
+  cards.splice(idx, 1);
+  focusedId = cards[Math.min(idx, cards.length - 1)].id;
+  render();
+  requestAnimationFrame(() => { const ed = getEditor(focusedId); if (ed) ed.focus(); updateUndoRedoBtns(); });
 }
 
-updatePreview();
-updateUndoRedoBtns();
+function deleteAll() {
+  deletedStack.push({ cards: cards.map(c => ({ ...c })), focusedId });
+  cards = [{ id: nextId++, value: '' }];
+  focusedId = cards[0].id;
+  initHist(focusedId, '');
+  render();
+  requestAnimationFrame(() => { const ed = getEditor(focusedId); if (ed) ed.focus(); updateUndoRedoBtns(); });
+}
+
+// ── Render ─────────────────────────────────────────────────────
+function render() {
+  const list = document.getElementById('cardsList');
+  list.innerHTML = '';
+
+  cards.forEach((card, idx) => {
+    // Outer wrapper: index + card side by side
+    const wrap = document.createElement('div');
+    wrap.className = 'card-wrap';
+
+    const indexEl = document.createElement('div');
+    indexEl.className = 'card-index';
+    indexEl.textContent = idx + 1;
+    wrap.appendChild(indexEl);
+
+    const row = document.createElement('div');
+    row.className = 'card-row' + (card.id === focusedId ? ' focused' : '');
+    row.id = 'row-' + card.id;
+    row.style.flex = '1';  // fill remaining width
+
+    const leftPane = document.createElement('div');
+    leftPane.className = 'card-pane';
+
+    const editorContainer = document.createElement('div');
+    editorContainer.className = 'editor-container';
+
+    const overlay = document.createElement('div');
+    overlay.className = 'card-editor-overlay';
+    overlay.id = 'ov-' + card.id;
+
+    const ed = document.createElement('textarea');
+    ed.className = 'card-editor';
+    ed.id = 'ed-' + card.id;
+    ed.value = card.value;
+    ed.spellcheck = false;
+
+    editorContainer.appendChild(overlay);
+    editorContainer.appendChild(ed);
+    leftPane.appendChild(editorContainer);
+
+    const spl = document.createElement('div');
+    spl.className = 'card-splitter';
+
+    const rightPane = document.createElement('div');
+    rightPane.className = 'card-pane';
+    const pv = document.createElement('div');
+    pv.className = 'card-preview';
+    pv.id = 'pv-' + card.id;
+    rightPane.appendChild(pv);
+
+    row.appendChild(leftPane);
+    row.appendChild(spl);
+    row.appendChild(rightPane);
+    wrap.appendChild(row);
+    list.appendChild(wrap);
+
+    const resizeEl = document.createElement('div');
+    resizeEl.className = 'card-resize';
+    resizeEl.style.paddingLeft = '34px'; // align with card (index width + gap)
+    list.appendChild(resizeEl);
+
+    setupHorizontalSplit(spl, leftPane, rightPane, row);
+    setupVerticalResize(resizeEl, row);
+
+    ed.addEventListener('focus', () => {
+      focusedId = card.id;
+      document.querySelectorAll('.card-row').forEach(r => r.classList.remove('focused'));
+      row.classList.add('focused');
+      updateUndoRedoBtns();
+    });
+    ed.addEventListener('input', () => onInput(card.id));
+    ed.addEventListener('paste', e => handlePaste(e, card.id));
+    ed.addEventListener('scroll', () => { overlay.scrollTop = ed.scrollTop; });
+
+    updateOverlay(card.id);
+    updatePreview(card.id);
+  });
+}
+
+// ── Keyboard shortcuts ─────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (!e.ctrlKey && !e.metaKey) return;
+  const key = e.key.toLowerCase();
+  if (key === 'z') { e.preventDefault(); undo(); return; }
+  if (key === 'y') { e.preventDefault(); redo(); return; }
+  if (key === 'u') { e.preventDefault(); applyFormat('_', '_'); }
+  else if (key === 'b') { e.preventDefault(); applyFormat('(', ')'); }
+  else if (key === 'g') { e.preventDefault(); applyFormat('++', '++'); }
+  else if (key === 'q') { e.preventDefault(); toggleQuestion(); }
+  else if (key === '1') { e.preventDefault(); addSpeaker('A'); }
+  else if (key === '2') { e.preventDefault(); addSpeaker('B'); }
+});
+
+// ── Init ──────────────────────────────────────────────────────
+render();
+requestAnimationFrame(() => {
+  const ed = getEditor(cards[0].id);
+  if (ed) ed.focus();
+  updateUndoRedoBtns();
+});
 </script>
 </body>
 </html>
